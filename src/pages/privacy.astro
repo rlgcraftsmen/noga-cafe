@@ -1,0 +1,69 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate, getBusiness } from "@/lib/business";
+
+/**
+ * Token-driven baseline design: everything below inherits the client's
+ * palette and fontPairing automatically, so the page never ships unstyled.
+ * Per-client builds are still expected to restyle it into the concept's
+ * design language (see docs/DESIGN-DOCTRINE.md → page contract).
+ */
+const business = await getBusiness();
+const { privacy } = business.content.legal;
+const { consent } = business.content;
+// The manage-consent button only makes sense when a cookie tracker (and
+// therefore the banner) exists — same condition ConsentBanner renders under.
+const hasTracking =
+  business.data.analytics.gtagId !== "" || business.data.analytics.metaPixelId !== "";
+---
+
+<BaseLayout title={`${privacy.title} — ${business.data.name}`}>
+  <main id="main" class="section-pad">
+    <div class="mx-auto w-full max-w-2xl px-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-sm text-ink-muted transition-colors hover:text-primary"
+      >
+        {/* scaleX(--dir-factor) mirrors the chevron in RTL, where "back" points the other way */}
+        <svg
+          aria-hidden="true"
+          class="pointer-events-none size-4"
+          style="transform: scaleX(var(--dir-factor));"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M10 3 L5 8 L10 13" />
+        </svg>
+        <bdi>{business.data.name}</bdi>
+      </a>
+
+      <h1 class="mt-10 font-display text-4xl text-secondary md:text-5xl">{privacy.title}</h1>
+      <div class="mt-4 h-1 w-16 rounded-full bg-accent" aria-hidden="true"></div>
+
+      <div class="mt-10 space-y-5">
+        {privacy.body.map((paragraph) => <p>{paragraph}</p>)}
+      </div>
+
+      {
+        hasTracking && (
+          <button
+            type="button"
+            data-consent-reopen
+            class="mt-8 text-primary underline underline-offset-4 transition-colors hover:text-secondary"
+          >
+            {consent.manageLabel}
+          </button>
+        )
+      }
+
+      <p class="mt-10 text-sm text-ink-muted">
+        {privacy.statementDateLabel}{" "}
+        <bdi class="force-ltr">{formatDate(business.locale, privacy.statementDate)}</bdi>
+      </p>
+    </div>
+  </main>
+</BaseLayout>

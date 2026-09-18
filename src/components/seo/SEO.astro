@@ -1,0 +1,44 @@
+---
+import type { Business } from "@/content/business.schema";
+
+interface Props {
+  business: Business;
+  /** Page-specific overrides; defaults come from business.json → data.seo. */
+  title?: string | undefined;
+  description?: string | undefined;
+  /** Keep this page out of search indexes (404, thank-you pages). Also
+   *  suppresses the canonical — a noindex page must not self-canonicalize. */
+  noindex?: boolean | undefined;
+}
+
+const { business, noindex = false } = Astro.props;
+const { seo } = business.data;
+
+const title = Astro.props.title ?? seo.defaultTitle;
+const description = Astro.props.description ?? seo.defaultDescription;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL(seo.ogImage, Astro.site);
+const ogLocale = business.locale === "he" ? "he_IL" : "en_US";
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+{noindex ? <meta name="robots" content="noindex, follow" /> : <link rel="canonical" href={canonical.href} />}
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={business.data.name} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical.href} />
+<meta property="og:image" content={ogImage.href} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={title} />
+<meta property="og:locale" content={ogLocale} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage.href} />
+
+<link rel="sitemap" href="/sitemap-index.xml" />

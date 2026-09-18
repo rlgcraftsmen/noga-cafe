@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+/*
+ * Theme tokens.
+ * Brand colors AND neutrals are NOT hardcoded here — they arrive as
+ * --brand-* custom properties set on <html> by BaseLayout.astro, sourced
+ * from business.json → voice.palette. Re-theming a client (including dark
+ * sites) = editing business.json.
+ * `@theme inline` lets Tailwind utilities reference those runtime vars.
+ */
+@theme inline {
+  --color-primary: var(--brand-primary);
+  --color-secondary: var(--brand-secondary);
+  --color-accent: var(--brand-accent);
+  --color-surface: var(--brand-surface);
+  --color-surface-alt: var(--brand-surface-alt);
+  --color-ink: var(--brand-ink);
+  --color-ink-muted: var(--brand-ink-muted);
+  --color-line: var(--brand-line);
+
+  /* Families come from design.fontPairing (astro.config.mjs registers them
+     under these fixed variables) — components never name a font directly. */
+  --font-sans: var(--font-brand-body);
+  --font-display: var(--font-brand-display);
+
+  --radius-card: var(--shape-radius-card);
+  --radius-button: var(--shape-radius-button);
+
+  /* Elevation derives from ink so it follows dark/tinted themes.
+     X offsets use --dir-factor so shadows mirror in RTL. */
+  --shadow-card: calc(0px * var(--dir-factor)) 2px 12px
+    color-mix(in srgb, var(--brand-ink) 6%, transparent);
+  --shadow-card-hover: calc(-4px * var(--dir-factor)) 8px 28px
+    color-mix(in srgb, var(--brand-ink) 12%, transparent);
+}
+
+/*
+ * Shape + rhythm tokens — per-client design decisions.
+ * Defaults give the reference look; override per client in
+ * src/styles/custom.css (see docs/DESIGN-DOCTRINE.md).
+ * Components use rounded-card / rounded-button / section-pad utilities,
+ * never a literal radius or py-* on a section.
+ */
+:root {
+  --shape-radius-card: 1.25rem;
+  --shape-radius-button: 9999px;
+  --section-py: clamp(4rem, 8vw, 6rem);
+}
+
+@utility section-pad {
+  padding-block: var(--section-py);
+}
+
+/*
+ * Direction plumbing — the properties that do NOT auto-flip with dir="rtl".
+ * Convention: any directional value in CSS or GSAP multiplies by
+ * var(--dir-factor) / reads these tokens. Never write a raw left/right value.
+ *
+ *   --dir-factor           multiply horizontal offsets (shadows, translateX)
+ *   --angle-brand          mirrored linear-gradient angle
+ *   --origin-inline-start  transform-origin keyword for the inline-start edge
+ *   --bg-pos-inline-start  background-position keyword for the inline-start edge
+ */
+:root {
+  --dir-factor: 1;
+  --angle-brand: 135deg;
+  --origin-inline-start: left;
+  --bg-pos-inline-start: left;
+}
+
+[dir="rtl"] {
+  --dir-factor: -1;
+  --angle-brand: 225deg;
+  --origin-inline-start: right;
+  --bg-pos-inline-start: right;
+}
+
+html {
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  /* Comfortable for Hebrew (and fine for Latin). */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Hebrew typography:
+ * - slightly larger base than a Latin equivalent
+ * - letter-spacing must stay 0 — Hebrew has no tracking. Do not use
+ *   tracking-* utilities on Hebrew text; this guard neutralizes mistakes.
+ */
+html[lang="he"] {
+  font-size: 106.25%; /* 17px base */
+}
+
+html[lang="he"] body * {
+  letter-spacing: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+/* Force LTR for phone numbers, prices, URLs, code — pair with <bdi> for mixed runs. */
+.force-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-secondary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Anchor-scroll targets (sections, #main) receive programmatic focus so Tab
+   order follows the jump — they are not interactive, so no ring. */
+[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
+/* Body scroll lock while a full-height drawer is open (src/lib/nav.ts flips
+   this — an open drawer over a still-scrolling page reads as broken). */
+body.is-locked {
+  overflow: hidden;
+}
+
+/* Motion is opt-in: the animation layer reveals [data-reveal] elements.
+   If JS fails or reduced motion is preferred, everything stays visible. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

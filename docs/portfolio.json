@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "comment": "Machine-readable fingerprints of shipped sites — the divergence validator's input (npm run validate:divergence). Append one entry per shipped client at handoff (PLAYBOOK step 9); the /new-client report ends with a ready-to-paste object. Format spec: docs/PORTFOLIO.md → Fingerprint format. accentHex is the site's DOMINANT brand accent as judged (it is what sameness was measured on) — usually voice.palette.accent, but record what the page actually reads as; accentHexAlt is informational only.",
+  "entries": [
+    {
+      "client": "the-tree",
+      "date": "2026-07",
+      "businessType": "restaurant",
+      "metaphorFamily": "time-of-day-arc",
+      "metaphorNote": "sunset → late night",
+      "pageForm": "band-stack",
+      "paletteFamily": "dark green night + cream",
+      "accentHex": "#d9a441",
+      "accentHexAlt": "#7a3418",
+      "fontPairing": "refined",
+      "signature": "cream menu card \"lit\" mid-night; ticker",
+      "motionIdentity": "light draining section by section",
+      "furniture": ["marquee-ticker", "cream-card-on-dark-band"],
+      "screenshot": "portfolio/the-tree.png"
+    },
+    {
+      "client": "natan-meathouse",
+      "date": "2026-07",
+      "businessType": "steakhouse",
+      "metaphorFamily": "ritual-sequence",
+      "metaphorNote": "the board arrives, the evening unfolds",
+      "pageForm": "band-stack",
+      "paletteFamily": "near-black char + cream",
+      "accentHex": "#d8a13c",
+      "accentHexAlt": "#a82f18",
+      "fontPairing": "poster",
+      "signature": "the board (pinned/tilted); sear divider",
+      "motionIdentity": "sear/char, slats",
+      "furniture": ["cream-card-on-dark-band"],
+      "screenshot": "portfolio/natan-meathouse.png"
+    },
+    {
+      "client": "under-the-tree",
+      "date": "2026-07",
+      "businessType": "cafe",
+      "metaphorFamily": "time-of-day-arc",
+      "metaphorNote": "שעון הצל, 07:00 → midnight",
+      "pageForm": "band-stack",
+      "paletteFamily": "cream/kraft + forest",
+      "accentHex": "#a99841",
+      "fontPairing": "poster",
+      "signature": "shade-clock rail; canopy; ticker",
+      "motionIdentity": "one day passing",
+      "furniture": ["marquee-ticker"],
+      "screenshot": "portfolio/under-the-tree.png"
+    },
+    {
+      "client": "barbarini",
+      "date": "2026-08",
+      "businessType": "cafe-restaurant",
+      "metaphorFamily": "time-of-day-arc",
+      "metaphorNote": "dawn → night bands",
+      "pageForm": "band-stack",
+      "paletteFamily": "cream/sand + night wine",
+      "accentHex": "#e09a2e",
+      "fontPairing": "poster",
+      "signature": "taboon arch (only curve on the site); day-rail scrub",
+      "motionIdentity": "falling light — settle, never snap",
+      "furniture": ["marquee-ticker"],
+      "screenshot": "portfolio/barbarini.png"
+    },
+    {
+      "client": "nook-cafe",
+      "date": "2026-08",
+      "businessType": "cafe",
+      "metaphorFamily": "the-place-itself",
+      "metaphorNote": "photo-led; the courtyard is the product",
+      "pageForm": "photo-led-scene",
+      "paletteFamily": "warm cream/kraft + espresso",
+      "accentHex": "#e2703a",
+      "fontPairing": "bold",
+      "signature": "hero video loop of branded takeaway cups; menu as a ruled document with scrubbed leader dots",
+      "motionIdentity": "sunlight — slow push-in, photographs drift inside their frames",
+      "furniture": ["full-bleed-video-hero", "ruled-document-menu"],
+      "screenshot": "portfolio/nook-cafe.png"
+    }
+  ]
+}

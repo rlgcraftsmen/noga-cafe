@@ -1,0 +1,220 @@
+---
+import { getBusiness } from "@/lib/business";
+
+/**
+ * Cookie-consent banner. Renders ONLY when business.json declares a
+ * cookie-based tracker (analytics.gtagId / analytics.metaPixelId).
+ * Tracking scripts are loaded exclusively AFTER the visitor accepts;
+ * the choice persists in localStorage ("cookie-consent": granted|denied).
+ * Cloudflare Web Analytics is cookieless and intentionally not gated.
+ */
+const business = await getBusiness();
+const { gtagId, metaPixelId } = business.data.analytics;
+const hasTracking = gtagId !== "" || metaPixelId !== "";
+const { consent } = business.content;
+---
+
+{
+  hasTracking && (
+    <div
+      id="consent-banner"
+      role="region"
+      aria-label={consent.message}
+      hidden
+      class="fixed inset-inline-0 bottom-0 z-50 border-t border-line bg-surface p-4 shadow-card-hover sm:bottom-4 sm:end-4 sm:inset-inline-auto sm:max-w-sm sm:rounded-card sm:border"
+      data-gtag-id={gtagId}
+      data-meta-pixel-id={metaPixelId}
+    >
+      <p class="text-sm text-ink">
+        {consent.message}{" "}
+        <a href="/privacy/" class="text-primary underline underline-offset-4">
+          {consent.privacyLabel}
+        </a>
+      </p>
+      <div class="mt-3 flex gap-3">
+        <button
+          type="button"
+          data-consent-accept
+          class="min-h-10 flex-1 rounded-button bg-primary px-4 py-2 text-sm font-semibold text-surface transition-colors hover:bg-secondary"
+        >
+          {consent.acceptLabel}
+        </button>
+        <button
+          type="button"
+          data-consent-decline
+          class="min-h-10 flex-1 rounded-button border border-line px-4 py-2 text-sm font-semibold text-secondary transition-colors hover:border-primary"
+        >
+          {consent.declineLabel}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+<script>
+  const STORAGE_KEY = "cookie-consent";
+
+  type FbqFn = ((...args: unknown[]) => void) & {
+    callMethod?: (...args: unknown[]) => void;
+    queue: IArguments[];
+    push: unknown;
+    loaded: boolean;
+    version: string;
+  };
+
+  declare global {
+    interface Window {
+      dataLayer?: IArguments[];
+      gtag?: (...args: unknown[]) => void;
+      fbq?: FbqFn;
+      _fbq?: FbqFn;
+    }
+  }
+
+  function loadScript(src: string): void {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = src;
+    document.head.appendChild(script);
+  }
+
+  // localStorage throws in some private-browsing/cookie-blocked contexts —
+  // degrade to a session-only choice instead of killing the whole script.
+  function storedChoice(): string | null {
+    try {
+      return localStorage.getItem(STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  }
+  function storeChoice(value: "granted" | "denied"): void {
+    try {
+      localStorage.setItem(STORAGE_KEY, value);
+    } catch {
+      // Private mode — the banner will re-appear next visit, which is correct.
+    }
+  }
+
+  function gtag(..._args: unknown[]): void {
+    // biome-ignore lint/complexity/noArguments: gtag.js only processes `arguments` objects pushed to dataLayer — a plain array is silently ignored.
+    window.dataLayer?.push(arguments);
+  }
+
+  /** The official fbevents.js bootstrap shape — the loader drains `queue` and
+   *  relies on push/loaded/version being exactly this. */
+  function ensureFbq(): FbqFn {
+    if (window.fbq) return window.fbq;
+    const fbq = function (this: unknown): void {
+      if (fbq.callMethod) {
+        // biome-ignore lint/complexity/noArguments: canonical Meta Pixel stub — fbevents.js expects `arguments` objects.
+        fbq.callMethod.apply(fbq, Array.prototype.slice.call(arguments));
+      } else {
+        // biome-ignore lint/complexity/noArguments: see above.
+        fbq.queue.push(arguments);
+      }
+    } as FbqFn;
+    fbq.queue = [];
+    fbq.push = fbq;
+    fbq.loaded = true;
+    fbq.version = "2.0";
+    window.fbq = fbq;
+    window._fbq = window._fbq ?? fbq;
+    return fbq;
+  }
+
+  // ClientRouter swaps re-fire astro:page-load — the scripts must be injected
+  // exactly once per real page load, then virtual pageviews take over.
+  let trackersLoaded = false;
+
+  function loadTrackers(banner: HTMLElement): void {
+    const gtagId = banner.dataset.gtagId ?? "";
+    const metaPixelId = banner.dataset.metaPixelId ?? "";
+
+    if (trackersLoaded) {
+      if (gtagId !== "") {
+        gtag("event", "page_view", {
+          page_location: window.location.href,
+          page_title: document.title,
+        });
+      }
+      if (metaPixelId !== "") window.fbq?.("track", "PageView");
+      return;
+    }
+    trackersLoaded = true;
+
+    if (gtagId !== "") {
+      window.dataLayer = window.dataLayer ?? [];
+      // Exposed globally so lib/track.ts can fire conversion events.
+      window.gtag = gtag;
+      gtag("js", new Date());
+      gtag("config", gtagId);
+      loadScript(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gtagId)}`);
+    }
+
+    if (metaPixelId !== "") {
+      const fbq = ensureFbq();
+      fbq("init", metaPixelId);
+      fbq("track", "PageView");
+      loadScript("https://connect.facebook.net/en_US/fbevents.js");
+    }
+  }
+
+  function setupConsent(): void {
+    const banner = document.getElementById("consent-banner");
+    if (!banner) return;
+
+    // Bind FIRST, unconditionally: the reopen control (privacy page) can
+    // un-hide this banner at any time, so its buttons must work even when a
+    // choice was already stored on load. Binding only on the
+    // no-choice-yet branch left the reopened banner completely inert —
+    // exactly for the visitors who came to withdraw consent.
+    if (banner.dataset.consentBound !== "true") {
+      banner.dataset.consentBound = "true";
+      banner.querySelector("[data-consent-accept]")?.addEventListener("click", () => {
+        storeChoice("granted");
+        banner.hidden = true;
+        loadTrackers(banner);
+      });
+      banner.querySelector("[data-consent-decline]")?.addEventListener("click", () => {
+        storeChoice("denied");
+        banner.hidden = true;
+        // Withdrawing AFTER trackers already ran this session: a reload is the
+        // only way to actually stop them (script tags can't be un-executed).
+        if (trackersLoaded) window.location.reload();
+      });
+    }
+
+    const choice = storedChoice();
+    if (choice === "granted") {
+      loadTrackers(banner);
+      return;
+    }
+    if (choice === "denied") return;
+
+    banner.hidden = false;
+  }
+
+  /** [data-consent-reopen] (privacy page) — consent must be withdrawable:
+   *  clears the stored choice and re-shows the banner (whose buttons are
+   *  already bound by setupConsent above). */
+  function setupConsentReopen(): void {
+    const banner = document.getElementById("consent-banner");
+    if (!banner) return;
+    for (const trigger of document.querySelectorAll("[data-consent-reopen]")) {
+      if ((trigger as HTMLElement).dataset.consentReopenBound === "true") continue;
+      (trigger as HTMLElement).dataset.consentReopenBound = "true";
+      trigger.addEventListener("click", () => {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          // Private mode — nothing stored anyway.
+        }
+        banner.hidden = false;
+        banner.scrollIntoView({ block: "end" });
+      });
+    }
+  }
+
+  document.addEventListener("astro:page-load", setupConsent);
+  document.addEventListener("astro:page-load", setupConsentReopen);
+</script>

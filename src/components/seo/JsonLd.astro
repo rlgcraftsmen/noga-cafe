@@ -1,0 +1,12 @@
+---
+interface Props {
+  data: Record<string, unknown>;
+}
+
+const { data } = Astro.props;
+// set:html performs no escaping; guard against `</script` in any copy-derived
+// string (business name, FAQ text, etc.) breaking out of the tag early.
+const json = JSON.stringify(data).replace(/</g, "\\u003c");
+---
+
+<script type="application/ld+json" is:inline set:html={json} />

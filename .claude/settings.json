@@ -1,0 +1,21 @@
+{
+  "enableAllProjectMcpServers": true,
+  "permissions": {
+    "allow": [
+      "mcp__context7",
+      "mcp__astro-docs",
+      "mcp__playwright",
+      "mcp__chrome-devtools",
+      "mcp__lighthouse",
+      "mcp__a11y"
+    ],
+    "deny": [
+      "Bash(npm run deploy*)",
+      "Bash(npx wrangler*)",
+      "Bash(wrangler*)",
+      "PowerShell(npm run deploy*)",
+      "PowerShell(npx wrangler*)",
+      "PowerShell(wrangler*)"
+    ]
+  }
+}

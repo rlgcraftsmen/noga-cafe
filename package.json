@@ -1,0 +1,63 @@
+{
+  "name": "business-template",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "description": "Static, RTL-first Astro template for small-business sites. Content-driven via business.json.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "astro check",
+    "validate:content": "tsx scripts/validate-content.ts",
+    "validate:divergence": "tsx scripts/validate-divergence.ts",
+    "preflight": "tsx scripts/preflight.ts",
+    "generate:og": "tsx scripts/generate-og.ts",
+    "generate:placeholders": "tsx scripts/generate-placeholders.ts",
+    "sample:palette": "tsx scripts/sample-palette.ts",
+    "test:visual": "playwright test --grep @visual",
+    "test:ltr-build": "tsx scripts/check-ltr-build.ts",
+    "test": "npm run validate:content && npm run lint && npm run typecheck",
+    "test:e2e": "playwright test --grep-invert @visual",
+    "deploy": "npm run test && tsx scripts/deploy.ts",
+    "gsc:setup": "tsx scripts/setup-gsc.ts",
+    "setup:skills": "tsx scripts/setup-skills.ts",
+    "sync:template": "tsx scripts/sync-template.ts",
+    "report": "tsx scripts/report.ts",
+    "deploy:preview": "npm run validate:content && tsx scripts/deploy.ts --branch=preview",
+    "deploy:setup": "tsx scripts/deploy.ts --setup",
+    "lhci": "lhci autorun",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "3.7.3",
+    "@tailwindcss/vite": "4.3.3",
+    "astro": "7.2.2",
+    "gsap": "3.15.0",
+    "lenis": "1.3.26",
+    "tailwindcss": "4.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@axe-core/playwright": "4.13.0",
+    "@biomejs/biome": "2.5.8",
+    "@lhci/cli": "0.15.1",
+    "@playwright/test": "1.62.1",
+    "husky": "9.1.7",
+    "lint-staged": "17.3.0",
+    "sharp": "0.35.3",
+    "tsx": "4.23.12",
+    "typescript": "5.9.3",
+    "wrangler": "4.123.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs,astro,json,css}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
+  }
+}

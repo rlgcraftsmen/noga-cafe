@@ -1,0 +1,114 @@
+---
+import { Font } from "astro:assets";
+import { ClientRouter } from "astro:transitions";
+import JsonLd from "@/components/seo/JsonLd.astro";
+import SEO from "@/components/seo/SEO.astro";
+import ConsentBanner from "@/components/ui/ConsentBanner.astro";
+import { getBusiness, getDir } from "@/lib/business";
+import { faqJsonLd, localBusinessJsonLd, websiteJsonLd } from "@/lib/jsonld";
+import "@/styles/global.css";
+// Per-client design surface — loaded after global.css so it can re-skin
+// sections and override tokens (docs/DESIGN-DOCTRINE.md). Empty in the template.
+import "@/styles/custom.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /**
+   * Emit FAQPage JSON-LD on THIS page. Pass it only on the page that visibly
+   * renders the FAQ (Google requires marked-up questions to be on-page —
+   * emitting it site-wide, e.g. on /privacy/, violates their guidelines).
+   */
+  withFaqJsonLd?: boolean;
+  /** Keep this page out of search indexes (404, thank-you pages). */
+  noindex?: boolean;
+}
+
+const business = await getBusiness();
+const dir = getDir(business.locale);
+const { palette } = business.voice;
+const faq = Astro.props.withFaqJsonLd ? faqJsonLd(business) : null;
+
+// Brand tokens flow: business.json → these vars → @theme inline (global.css).
+const brandVars = [
+  `--brand-primary: ${palette.primary}`,
+  `--brand-secondary: ${palette.secondary}`,
+  `--brand-accent: ${palette.accent}`,
+  `--brand-surface: ${palette.surface}`,
+  `--brand-surface-alt: ${palette.surfaceAlt}`,
+  `--brand-ink: ${palette.ink}`,
+  `--brand-ink-muted: ${palette.inkMuted}`,
+  `--brand-line: ${palette.line}`,
+].join("; ");
+---
+
+<!doctype html>
+<html lang={business.locale} dir={dir} style={brandVars}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content={palette.primary} />
+    {
+      business.data.seo.googleSiteVerification && (
+        <meta name="google-site-verification" content={business.data.seo.googleSiteVerification} />
+      )
+    }
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <SEO
+      business={business}
+      title={Astro.props.title}
+      description={Astro.props.description}
+      noindex={Astro.props.noindex}
+    />
+    {/* Preload ONLY the display face — the h1 needs it for first paint. A
+        second preload puts ~36KB at high priority in front of the LCP image
+        and measurably delays it (docs/TRAPS.md); the body face swaps in. */}
+    <Font cssVariable="--font-brand-display" preload />
+    <Font cssVariable="--font-brand-body" />
+    <JsonLd data={localBusinessJsonLd(business)} />
+    <JsonLd data={websiteJsonLd(business)} />
+    {faq && <JsonLd data={faq} />}
+    {/* Per-page head extras — subpages inject BreadcrumbList JSON-LD here
+        (RECIPES recipe 10). */}
+    <slot name="head" />
+    <ClientRouter />
+  </head>
+  <body>
+    <a
+      href="#main"
+      class="fixed start-4 top-4 z-50 -translate-y-24 rounded-md bg-secondary px-4 py-2 text-surface transition-transform focus-visible:translate-y-0"
+    >
+      {business.content.ui.skipToContent}
+    </a>
+    <slot />
+    <ConsentBanner />
+    <script>
+      import { destroyAnimations, initAnimations } from "@/lib/animation";
+      import { setupContactForms } from "@/lib/form";
+      import { setupOpenNow } from "@/lib/hours";
+      import { setupSiteNav, teardownSiteNav } from "@/lib/nav";
+      import { setupConversionTracking } from "@/lib/track";
+
+      document.addEventListener("astro:page-load", initAnimations);
+      document.addEventListener("astro:before-swap", destroyAnimations);
+      document.addEventListener("astro:page-load", setupSiteNav);
+      document.addEventListener("astro:before-swap", teardownSiteNav);
+      document.addEventListener("astro:page-load", setupContactForms);
+      document.addEventListener("astro:page-load", setupOpenNow);
+      document.addEventListener("astro:page-load", setupConversionTracking);
+    </script>
+    {
+      business.data.analytics.cloudflareToken && (
+        <script
+          is:inline
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={JSON.stringify({ token: business.data.analytics.cloudflareToken })}
+        />
+      )
+    }
+  </body>
+</html>

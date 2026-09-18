@@ -1,0 +1,29 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "rangeStrategy": "pin",
+  "timezone": "Asia/Jerusalem",
+  "schedule": ["before 7am on monday"],
+  "prConcurrentLimit": 3,
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "groupName": "Astro",
+      "matchPackageNames": ["astro", "@astrojs/**"]
+    },
+    {
+      "groupName": "Tailwind",
+      "matchPackageNames": ["tailwindcss", "@tailwindcss/**"]
+    },
+    {
+      "groupName": "dev tooling",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "description": "Major updates get their own PR and require a human look",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    }
+  ]
+}

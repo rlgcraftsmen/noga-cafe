@@ -1,0 +1,14 @@
+# Biome (and the build tooling) expect LF. Without this, core.autocrlf=true on
+# Windows materializes CRLF on checkout and `npm run lint` fails on a fresh
+# clone. Keep everything LF in both the repo and the working tree.
+* text=auto eol=lf
+
+# Binary assets — never touch line endings.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary

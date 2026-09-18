@@ -1,0 +1,27 @@
+{
+  "ci": {
+    "collect": {
+      "staticDistDir": "./dist",
+      "url": ["http://localhost/index.html"],
+      "numberOfRuns": 3
+    },
+    "assert": {
+      "preset": "lighthouse:recommended",
+      "assertions": {
+        "largest-contentful-paint": ["error", { "maxNumericValue": 2500 }],
+        "total-blocking-time": ["error", { "maxNumericValue": 200 }],
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
+        "network-dependency-tree-insight": "off",
+        "forced-reflow-insight": "off",
+        "categories:performance": ["error", { "minScore": 0.9 }],
+        "categories:accessibility": ["error", { "minScore": 0.95 }],
+        "categories:seo": ["error", { "minScore": 0.95 }],
+        "unused-javascript": "off",
+        "uses-text-compression": "off"
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

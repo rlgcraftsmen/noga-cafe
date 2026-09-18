@@ -1,0 +1,62 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getBusiness, telHref, whatsappHref } from "@/lib/business";
+
+/*
+ * The UNBUILT starter shell (docs/superpowers/specs/2026-07-24-primitives-only-design.md).
+ * Deliberately unstyled: it satisfies the page contract (nav ids resolve, one
+ * h1, footer with legal links, contact path, bidi line) so a fresh clone
+ * passes the gate — and nothing more. It is NOT a design and must not be
+ * styled. /new-client replaces this file entirely and deletes content.shell.
+ */
+const business = await getBusiness();
+const { shell } = business.content;
+if (!shell) {
+  throw new Error(
+    "content.shell is missing. The starter shell needs it — or replace index.astro with the client site.",
+  );
+}
+const sections = business.content.nav
+  .filter((link) => link.href.startsWith("#"))
+  .map((link) => ({ id: link.href.slice(1), label: link.label }));
+---
+
+<BaseLayout withFaqJsonLd={Boolean(business.content.faq)}>
+  <header>
+    <p><bdi>{business.data.name}</bdi></p>
+    <nav>
+      <ul>
+        {business.content.nav.map((link) => (
+          <li><a href={link.href}>{link.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+  </header>
+  <main id="main">
+    <h1>{shell.headline}</h1>
+    <p><strong>{shell.note}</strong></p>
+    <p>{shell.bidiSample}</p>
+    {sections.map((section) => (
+      <section id={section.id} class="scroll-mt-20">
+        <h2>{section.label}</h2>
+        {section.id === "contact" ? (
+          <ul>
+            <li><a href={telHref(business.data.contact.phone)} class="force-ltr">{business.data.contact.phone}</a></li>
+            {business.data.contact.whatsapp && (
+              <li><a href={whatsappHref(business.data.contact.whatsapp)}>WhatsApp</a></li>
+            )}
+          </ul>
+        ) : (
+          <p>{shell.note}</p>
+        )}
+      </section>
+    ))}
+  </main>
+  <footer>
+    <p><bdi>{business.data.legalName}</bdi> © {new Date().getFullYear()}</p>
+    <ul>
+      <li><a href="/accessibility-statement/">{business.content.legal.accessibility.title}</a></li>
+      <li><a href="/privacy/">{business.content.legal.privacy.title}</a></li>
+    </ul>
+  </footer>
+</BaseLayout>

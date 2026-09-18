@@ -1,0 +1,7 @@
+/*
+ * Per-client design surface — loaded after global.css.
+ * Color story, section re-skins, and token overrides
+ * (--shape-radius-card / --shape-radius-button / --section-py) live here.
+ * Tokens + color-mix() only; never literal hex. See docs/DESIGN-DOCTRINE.md.
+ * Empty in the template.
+ */

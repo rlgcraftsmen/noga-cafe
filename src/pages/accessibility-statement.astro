@@ -1,0 +1,107 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate, getBusiness, telHref } from "@/lib/business";
+
+/**
+ * Token-driven baseline design: everything below inherits the client's
+ * palette and fontPairing automatically, so the page never ships unstyled.
+ * Per-client builds are still expected to restyle it into the concept's
+ * design language (see docs/DESIGN-DOCTRINE.md → page contract).
+ */
+const business = await getBusiness();
+const { accessibility } = business.content.legal;
+---
+
+<BaseLayout title={`${accessibility.title} — ${business.data.name}`}>
+  <main id="main" class="section-pad">
+    <div class="mx-auto w-full max-w-2xl px-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-sm text-ink-muted transition-colors hover:text-primary"
+      >
+        {/* scaleX(--dir-factor) mirrors the chevron in RTL, where "back" points the other way */}
+        <svg
+          aria-hidden="true"
+          class="pointer-events-none size-4"
+          style="transform: scaleX(var(--dir-factor));"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M10 3 L5 8 L10 13" />
+        </svg>
+        <bdi>{business.data.name}</bdi>
+      </a>
+
+      <h1 class="mt-10 font-display text-4xl text-secondary md:text-5xl">{accessibility.title}</h1>
+      <div class="mt-4 h-1 w-16 rounded-full bg-accent" aria-hidden="true"></div>
+
+      <div class="mt-10 space-y-5">
+        {accessibility.intro.map((paragraph) => <p>{paragraph}</p>)}
+      </div>
+
+      <ul class="mt-8 list-disc space-y-3 ps-5 marker:text-primary">
+        {accessibility.adjustments.map((item) => <li>{item}</li>)}
+      </ul>
+
+      <h2 class="mt-12 font-display text-2xl text-secondary">
+        {accessibility.knownLimitationsTitle}
+      </h2>
+      <ul class="mt-4 list-disc space-y-3 ps-5 marker:text-primary">
+        {accessibility.knownLimitations.map((item) => <li>{item}</li>)}
+      </ul>
+
+      {
+        accessibility.physicalAccessibility.length > 0 && (
+          <>
+            <h2 class="mt-12 font-display text-2xl text-secondary">
+              {accessibility.physicalAccessibilityTitle}
+            </h2>
+            <ul class="mt-4 list-disc space-y-3 ps-5 marker:text-primary">
+              {accessibility.physicalAccessibility.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+
+      <div class="mt-12 rounded-card border border-line bg-surface-alt p-6 md:p-8">
+        <h2 class="font-display text-xl text-secondary">{accessibility.coordinator.role}</h2>
+        <p class="mt-2 font-semibold"><bdi>{accessibility.coordinator.name}</bdi></p>
+        <ul class="mt-4 space-y-2">
+          <li>
+            <a
+              class="text-primary underline-offset-4 transition-colors hover:underline"
+              href={telHref(accessibility.coordinator.phone)}
+            >
+              <bdi class="force-ltr">{accessibility.coordinator.phone}</bdi>
+            </a>
+          </li>
+          <li>
+            <a
+              class="text-primary underline-offset-4 transition-colors hover:underline"
+              href={`mailto:${accessibility.coordinator.email}`}
+            >
+              <bdi class="force-ltr">{accessibility.coordinator.email}</bdi>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="mt-10 space-y-1 text-sm text-ink-muted">
+        <p>
+          {accessibility.auditDateLabel}{" "}
+          <bdi class="force-ltr">{formatDate(business.locale, accessibility.auditDate)}</bdi>
+        </p>
+        <p>
+          {accessibility.statementDateLabel}{" "}
+          <bdi class="force-ltr">{formatDate(business.locale, accessibility.statementDate)}</bdi>
+        </p>
+      </div>
+    </div>
+  </main>
+</BaseLayout>

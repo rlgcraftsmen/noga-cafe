@@ -1,0 +1,37 @@
+# build output
+dist/
+# generated types
+.astro/
+# wrangler local state (deploy cache)
+.wrangler/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.production
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# agent working files
+.superpowers/
+
+# testing
+playwright-report/
+.playwright-mcp/
+test-results/
+.lighthouseci/
+
+# visual regression baselines are per-machine (see README)
+tests/visual.spec.ts-snapshots/
